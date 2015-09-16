@@ -9,6 +9,10 @@
     <h1>json2js</h1>
     <textarea id="input" placeholder="Paste your JSON here" style="width: 45%; height: 80vh"></textarea>
     <textarea id="output" placeholder="Your JS will appear here" style="width: 45%; height: 80vh"></textarea>
+    <details>
+      <summary>Options</summary>
+      <p><label>Remove properties matching this regexp</label><input id="filter" value="^$" style="width: 60%" /></p>
+    </details>
     <script type="text/javascript">
     var
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -26,20 +30,22 @@
         return JSON.stringify(v);
       }
     };
-    stringify = function(input) {
+    stringify = function(input, filter) {
       var key, val;
       if (Object.prototype.toString.call(input) === "[object Object]") {
         return '{' + ((function() {
           var results;
           results = [];
           for (key in input) {
-            val = input[key];
-            results.push((stringifyName(key)) + ": " + (stringify(val)));
+            if (!filter.test(key)) {
+              val = input[key];
+              results.push((stringifyName(key)) + ": " + (stringify(val, filter)));
+            }
           }
           return results;
         })()).join(',\n') + '}';
       } else if (Object.prototype.toString.call(input) === "[object Array]") {
-        return '[' + input.map(stringify).join(', ') + ']';
+        return '[' + input.map(function(v) { return stringify(v, filter); }).join(', ') + ']';
       } else if (typeof input == 'string') {
         return "'" + input.replace(/'/, "\\'") + "'";
       } else {
@@ -47,14 +53,19 @@
       }
     };
 
-    var inputEl = document.getElementById('input'),
-        outputEl = document.getElementById('output');
-    inputEl.addEventListener('change', function() {
+    function doWork() {
       var json = JSON.parse(inputEl.value);
-      outputEl.value = js_beautify(stringify(json), {
+      var filter = new RegExp(filterEl.value);
+      outputEl.value = js_beautify(stringify(json, filter), {
         indent_size: 2
       });
-    });
+    }
+
+    var inputEl = document.getElementById('input'),
+        outputEl = document.getElementById('output'),
+        filterEl = document.getElementById('filter');
+    inputEl.addEventListener('keyup', doWork);
+    filterEl.addEventListener('keyup', doWork);
     </script>
   </body>
 </html>
