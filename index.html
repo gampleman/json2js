@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>JSON2JS</title>
+  </head>
+  <body>
+    <h1>json2js</h1>
+    <textarea id="input" placeholder="Paste your JSON here" style="width: 45%; height: 80vh"></textarea>
+    <textarea id="output" placeholder="Your JS will appear here" style="width: 45%; height: 80vh"></textarea>
+    <script type="text/javascript">
+    var
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+    var nameRe, reserved, stringify, stringifyName, stringifySimple;
+    reserved = 'instanceof typeof break do new var case else return void catch finally continue for switch while this with debugger function throw default if try delete in'.split(' ');
+    nameRe = /^[$A-Z_][0-9A-Z_$]*$/i;
+    stringifySimple = function(v) {
+      return JSON.stringify(v, null, 2);
+    };
+    stringifyName = function(v) {
+      if (indexOf.call(reserved, v) < 0 && v.match(nameRe)) {
+        return v;
+      } else {
+        return JSON.stringify(v);
+      }
+    };
+    stringify = function(input) {
+      var key, val;
+      if (Object.prototype.toString.call(input) === "[object Object]") {
+        return '{' + ((function() {
+          var results;
+          results = [];
+          for (key in input) {
+            val = input[key];
+            results.push((stringifyName(key)) + ": " + (stringify(val)));
+          }
+          return results;
+        })()).join(',\n') + '}';
+      } else if (Object.prototype.toString.call(input) === "[object Array]") {
+        return '[' + input.map(stringify).join(', ') + ']';
+      } else {
+        return stringifySimple(input);
+      }
+    };
+
+    var inputEl = document.getElementById('input'),
+        outputEl = document.getElementById('output');
+    inputEl.addEventListener('change', function() {
+      var json = JSON.parse(inputEl.value);
+      outputEl.value = stringify(json);
+    });
+    </script>
+  </body>
+</html>
