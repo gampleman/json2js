@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>JSON2JS</title>
+    <script src="beautify.js" charset="utf-8"></script>
   </head>
   <body>
     <h1>json2js</h1>
@@ -39,6 +40,8 @@
         })()).join(',\n') + '}';
       } else if (Object.prototype.toString.call(input) === "[object Array]") {
         return '[' + input.map(stringify).join(', ') + ']';
+      } else if (typeof input == 'string') {
+        return "'" + input.replace(/'/, "\\'") + "'";
       } else {
         return stringifySimple(input);
       }
@@ -48,7 +51,9 @@
         outputEl = document.getElementById('output');
     inputEl.addEventListener('change', function() {
       var json = JSON.parse(inputEl.value);
-      outputEl.value = stringify(json);
+      outputEl.value = js_beautify(stringify(json), {
+        indent_size: 2
+      });
     });
     </script>
   </body>
